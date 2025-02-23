@@ -2,13 +2,20 @@
 
 package com.dash0.homeexercise;
 
+import java.time.Duration;
+import java.util.concurrent.Executors;
+
 import com.dash0.homeexercise.otel.grpc.GrpcConfig;
 import com.dash0.homeexercise.otel.grpc.GrpcServer;
+import com.dash0.homeexercise.otel.grpc.LogProcessor;
 import com.dash0.homeexercise.otel.grpc.LogsService;
+import com.dash0.homeexercise.otel.grpc.UniqueCountLogProcessor;
+import com.dash0.homeexercise.otel.grpc.UniqueCountLogSchedulerTaskNotifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
@@ -107,8 +114,22 @@ public class AppConfiguration {
 	}
 
 	@Bean
-	public LogsService logsService() {
-		return new LogsService();
+	public LogProcessor logProcessor(@Value("${otel.log.processor.attributeKey}") String attributeKey) {
+		return new UniqueCountLogProcessor(Executors.newVirtualThreadPerTaskExecutor(), attributeKey);
+	}
+
+	@Bean
+	public LogsService logsService(LogProcessor logProcessor) {
+		return new LogsService(logProcessor);
+	}
+
+	@Bean
+	public UniqueCountLogSchedulerTaskNotifier uniqueCountLogSchedulerTaskNotifier(UniqueCountLogProcessor logProcessor,
+			@Value("${otel.log.processor.windowDuration}") Duration windowDuration) {
+		return new UniqueCountLogSchedulerTaskNotifier(
+				logProcessor,
+				Executors.newSingleThreadScheduledExecutor(),
+				windowDuration);
 	}
 
 }

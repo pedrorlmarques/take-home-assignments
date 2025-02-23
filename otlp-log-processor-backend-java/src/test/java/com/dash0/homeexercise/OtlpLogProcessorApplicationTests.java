@@ -59,10 +59,28 @@ class OtlpLogProcessorApplicationTests {
 			var logger = loggerProvider.get("opentel-example");
 
 			// Create a basic log record
+			// Create a few basic log records
+
+			var attributeToTrack = "some-attribute";
 			logger.logRecordBuilder()
-					.setBody("some log message")
+					.setBody("first message")
 					.setSeverity(Severity.INFO)
-					.setAttribute(AttributeKey.stringKey("my-attribute"), "foo")
+					.setAttribute(AttributeKey.stringKey(attributeToTrack), "foo")
+					.emit();
+			logger.logRecordBuilder()
+					.setBody("second message")
+					.setSeverity(Severity.INFO)
+					.setAttribute(AttributeKey.stringKey(attributeToTrack), "foo")
+					.emit();
+			logger.logRecordBuilder()
+					.setBody("third message")
+					.setSeverity(Severity.INFO)
+					.setAttribute(AttributeKey.stringKey("some-other-attribute"), "foo")
+					.emit();
+			logger.logRecordBuilder()
+					.setBody("fourth message")
+					.setSeverity(Severity.INFO)
+					.setAttribute(AttributeKey.stringKey(attributeToTrack), "baz")
 					.emit();
 
 			CompletableResultCode flushResult = logRecordProcessor.forceFlush().join(5, TimeUnit.SECONDS);

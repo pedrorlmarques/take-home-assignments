@@ -72,6 +72,8 @@ dependencies {
 		because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
 	}
 
+	testImplementation("org.awaitility:awaitility:4.3.0")
+
 	errorprone(libs.errorproneCore)
 
 }
